@@ -8,21 +8,51 @@ function escapeHtml(value) {
     .replaceAll("'", '&#039;')
 }
 
+let resultCount
+let resultList
+
 function selectAttempts(filter) {
-  // TODO: верните все попытки, прошедшие или не прошедшие порог.
-  return []
+  const attempts = window.reportData.attempts
+
+  if (filter === 'passed') {
+    return attempts.filter((attempt) => attempt.passed === true)
+  }
+
+  if (filter === 'failed') {
+    return attempts.filter((attempt) => attempt.passed === false)
+  }
+
+  return attempts
 }
 
 function renderAttempts(attempts) {
-  // TODO: соберите строки списка через forEach и строковый аккумулятор.
-  // Перед вставкой имени вызовите готовую escapeHtml().
+  let markup = ''
+
+  attempts.forEach((attempt) => {
+    const status = attempt.passed ? 'Порог пройден' : 'Порог не пройден'
+
+    markup += `
+      <li class="result-item">
+        <span class="result-name">${escapeHtml(attempt.name)}</span>
+        <span>${attempt.score} из ${window.reportData.questionCount} (${attempt.percentage}%) — ${status}</span>
+      </li>`
+  })
+
+  resultList.innerHTML = markup
+  resultCount.textContent = `Показано: ${attempts.length} из ${window.reportData.attempts.length}`
 }
 
 function startFilter() {
-  // TODO: найдите форму, select, счётчик и список через querySelector().
-  // TODO: подпишитесь на submit через addEventListener().
-  // В обработчике вызовите preventDefault(), прочитайте value,
-  // выберите попытки и замените innerHTML счётчика и списка.
+  const form = document.querySelector('#filter-form')
+  const select = document.querySelector('#filter')
+  resultCount = document.querySelector('#result-count')
+  resultList = document.querySelector('#result-list')
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault()
+    const attempts = selectAttempts(select.value)
+    renderAttempts(attempts)
+  })
 }
 
 startFilter()
